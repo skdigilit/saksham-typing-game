@@ -116,6 +116,9 @@ func _on_collectible_collected(total: int) -> void:
 	if hud:
 		hud.update_score(score)
 		hud.update_collected(total)
+	## Shuffle all letters so each collection feels fresh
+	if grid:
+		grid.randomize_grid()
 
 
 ## Called when all collectibles for the round are gathered.
