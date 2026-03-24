@@ -36,13 +36,7 @@ func initialize(p_grid: LetterGrid, p_circle: GameCircle, p_player: PlayerContro
 	player.moved_to.connect(_on_player_moved)
 
 
-## The minimum number of key presses the player must make to reach the gold letter.
-## 4 means the gold letter is always at least 4 moves away — never right next door.
-## Increase to make the player travel further for each collectible; decrease for shorter trips.
-const MIN_DISTANCE: int = 4
-
-## Spawns a new collectible at a cell at least MIN_DISTANCE keystrokes from the player.
-## Falls back to smaller distances if not enough far cells are available.
+## Spawns a new collectible at a random cell that is not the player's current position.
 func spawn_collectible() -> void:
 	if grid == null:
 		return
@@ -50,27 +44,11 @@ func spawn_collectible() -> void:
 	var all_positions: Array[Vector2i] = GridHelpers.all_positions()
 	var player_pos: Vector2i = Vector2i(player.current_row, player.current_col)
 
-	## BFS from the player to get move-distance to every reachable cell
-	var distances: Dictionary = GridHelpers.bfs_distances(player.current_row, player.current_col)
-
-	## Try MIN_DISTANCE first, then fall back to smaller distances if needed
+	## Any cell except the one the player is standing on
 	var candidates: Array[Vector2i] = []
-	var required_dist: int = MIN_DISTANCE
-	while candidates.is_empty() and required_dist >= 1:
-		for pos in all_positions:
-			if pos == player_pos:
-				continue
-			var d: int = distances.get(pos, 0)
-			if d >= required_dist:
-				candidates.append(pos)
-		if candidates.is_empty():
-			required_dist -= 1
-
-	## Last resort: any cell other than the player's own
-	if candidates.is_empty():
-		for pos in all_positions:
-			if pos != player_pos:
-				candidates.append(pos)
+	for pos in all_positions:
+		if pos != player_pos:
+			candidates.append(pos)
 
 	## Pick a random candidate
 	if candidates.is_empty():
